@@ -1,0 +1,497 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FFFFFF">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Reading List">
+<title>Reading List</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-180.png">
+<style>
+:root{
+  --bg:#F3F4F6; --card:#FFFFFF; --ink:#1B1F24; --sub:#4A515C; --muted:#6B7280;
+  --line:#E2E5EA; --line2:#CDD2D9; --track:#E5E8EC;
+  --accent:#0F6E6A; --accent-dk:#0A4F4C; --accent-soft:#E8F1F0;
+  --done:#2B4C9B; --danger:#A3431F;
+  --sans:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic UI","Yu Gothic",sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+[hidden]{display:none!important}
+.app{max-width:480px;margin:0 auto;min-height:100vh;min-height:100dvh;position:relative}
+.mono{font-family:var(--mono)}
+
+/* header */
+.top{position:sticky;top:0;z-index:5;background:#fff;border-bottom:1px solid var(--line);padding:calc(env(safe-area-inset-top) + 18px) 12px 12px 20px}
+.top-row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.top h1{margin:0;font-size:24px;font-weight:700;letter-spacing:.01em}
+.today{font-family:var(--mono);font-size:14px;color:var(--sub);margin-top:2px}
+.icon-btn{width:44px;height:44px;border:0;background:transparent;display:flex;align-items:center;justify-content:center;color:var(--sub);border-radius:10px;flex:none}
+.icon-btn:active{background:var(--bg)}
+.icon-btn.danger{color:var(--danger)}
+.top.edit{padding:calc(env(safe-area-inset-top) + 10px) 8px 10px}
+.top.edit h1{font-size:17px}
+
+/* tabs */
+.tabs{display:flex;gap:8px;padding:14px 20px 6px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:none;height:36px;padding:0 14px;border-radius:18px;border:1px solid var(--line2);background:#fff;font-size:13px}
+.tab[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff;font-weight:500}
+
+/* list */
+.list{padding:10px 20px calc(110px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:12px}
+.empty{padding:48px 12px;text-align:center;color:var(--muted);font-size:14px;line-height:1.7}
+.card{display:flex;flex-direction:column;gap:12px;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+.card:active{border-color:var(--line2);background:#FAFAFB}
+.card .head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.card .meta{display:block;font-family:var(--mono);font-size:12px;color:var(--muted)}
+.card .title{display:block;font-size:17px;font-weight:700;line-height:1.4;margin-top:4px;word-break:break-all}
+.pill{flex:none;height:26px;padding:0 10px;border-radius:13px;color:#fff;font-size:12px;font-weight:500;display:flex;align-items:center}
+.pill.reading{background:var(--accent)} .pill.todo{background:var(--muted)} .pill.done{background:var(--done)}
+.dates{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.dates span span{display:block}
+.dl{font-size:11px;color:var(--muted)}
+.dv{font-family:var(--mono);font-size:13px;margin-top:2px}
+.dv.none{color:var(--muted)}
+.bar{display:block;height:6px;border-radius:3px;background:var(--track);overflow:hidden}
+.bar span{display:block;height:6px;background:var(--accent)}
+.bar.done span{background:var(--done)} .bar.over span{background:var(--danger)}
+.prog{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--sub);margin-top:6px}
+.prog .over{color:var(--danger);font-weight:500}
+.memo{display:block;font-size:13px;color:var(--sub);white-space:pre-line;border-top:1px dashed var(--line);padding-top:10px}
+
+/* footer */
+.foot{position:fixed;left:0;right:0;bottom:0;z-index:5;background:linear-gradient(rgba(243,244,246,0),var(--bg) 30%)}
+.foot-in{max-width:480px;margin:0 auto;padding:16px 20px calc(16px + env(safe-area-inset-bottom));display:flex;gap:10px}
+.btn{height:48px;border-radius:12px;border:1px solid var(--line2);background:#fff;font-size:14px;display:flex;align-items:center;justify-content:center;gap:6px;padding:0 16px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-size:15px;font-weight:500}
+.btn.primary:active{background:var(--accent-dk)}
+.btn.wide{flex:1}.btn.wide2{flex:2}
+
+/* form */
+.form{padding:16px 20px calc(110px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:14px}
+.row{display:grid;gap:10px;align-items:start}
+.r-title{grid-template-columns:minmax(0,1fr) 72px}
+.r-dates{grid-template-columns:repeat(3,minmax(0,1fr))}
+.r-last{grid-template-columns:minmax(0,2fr) minmax(0,3fr)}
+.f{display:flex;flex-direction:column;gap:4px;min-width:0}
+.f label,.f .lab{font-size:12px;color:var(--sub);display:flex;justify-content:space-between;align-items:baseline}
+.cnt{font-family:var(--mono);color:var(--muted);font-size:11px}
+.cnt.full{color:var(--danger)}
+.in{width:100%;height:44px;padding:0 12px;border-radius:10px;border:1px solid var(--line2);background:#fff;font-size:16px;appearance:none;-webkit-appearance:none}
+.in:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:var(--accent)}
+.in.mono{font-family:var(--mono)}
+.in.center{text-align:center}
+input[type="date"].in{font-family:var(--mono);font-size:14px;padding:0 8px;min-width:0;display:flex;align-items:center}
+input[type="date"]::-webkit-date-and-time-value{text-align:left}
+textarea.in{height:auto;padding:8px 12px;line-height:1.5;resize:none}
+.date-clear{align-self:flex-end;border:0;background:transparent;color:var(--muted);font-size:12px;padding:6px 2px;min-height:28px}
+.days{display:flex;align-items:center;justify-content:space-between;background:var(--accent-soft);border-radius:10px;padding:10px 14px;gap:8px}
+.days .l{font-size:12px;color:#2F4A48}
+.days .basis{display:block;font-family:var(--mono);font-size:11px;color:#3E5C59;margin-top:2px}
+.days .v{font-family:var(--mono);font-size:20px;font-weight:500;color:var(--accent-dk)}
+.days .v.bad{color:var(--danger)}
+.seg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));background:var(--track);border-radius:10px;padding:3px;gap:3px}
+.seg button{height:40px;border:0;border-radius:8px;background:transparent;font-size:14px;color:var(--sub)}
+.seg button[aria-pressed="true"]{background:#fff;font-weight:700;color:var(--accent);box-shadow:0 1px 2px rgba(27,31,36,.08)}
+
+/* dialog */
+dialog{border:0;border-radius:16px;padding:0;width:min(92vw,400px);color:var(--ink)}
+dialog::backdrop{background:rgba(27,31,36,.4)}
+.dlg{padding:20px;display:flex;flex-direction:column;gap:12px}
+.dlg h2{margin:0;font-size:17px}
+.dlg p{margin:0;font-size:13px;color:var(--sub);line-height:1.6}
+.dlg .btn{width:100%}
+.toast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--ink);color:#fff;font-size:13px;padding:10px 16px;border-radius:20px;z-index:20;max-width:90vw}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ===== List ===== -->
+  <section id="listView">
+    <header class="top">
+      <div class="top-row">
+        <h1>Reading List</h1>
+        <button class="icon-btn" id="btnBackup" aria-label="Backup">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+        </button>
+      </div>
+      <div class="today" id="today"></div>
+    </header>
+    <nav class="tabs" id="tabs" aria-label="Status filter"></nav>
+    <main class="list" id="list"></main>
+    <div class="foot"><div class="foot-in">
+      <button class="btn wide" id="btnBackup2">Backup</button>
+      <button class="btn primary wide2" id="btnAdd">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Add Book</button>
+    </div></div>
+  </section>
+
+  <!-- ===== Edit ===== -->
+  <section id="editView" hidden>
+    <header class="top edit">
+      <div class="top-row">
+        <button class="icon-btn" id="btnBack" aria-label="Back" style="color:var(--ink)">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+        </button>
+        <h1 id="editTitle">Edit Book</h1>
+        <button class="icon-btn danger" id="btnDelete" aria-label="Delete">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <form class="form" id="form" autocomplete="off" novalidate>
+      <div class="row r-title">
+        <div class="f">
+          <label for="fTitle">Title <span class="cnt" id="cTitle">0/20</span></label>
+          <input class="in" id="fTitle" type="text" enterkeyhint="next">
+        </div>
+        <div class="f">
+          <label for="fVol">Vol.</label>
+          <input class="in mono center" id="fVol" type="text" inputmode="numeric">
+        </div>
+      </div>
+
+      <div class="row r-dates">
+        <div class="f">
+          <label for="fStart">Start</label>
+          <input class="in" id="fStart" type="date">
+        </div>
+        <div class="f">
+          <label for="fDue">Due</label>
+          <input class="in" id="fDue" type="date">
+        </div>
+        <div class="f">
+          <label for="fFinished">Finished</label>
+          <input class="in" id="fFinished" type="date">
+          <button type="button" class="date-clear" id="clearFinished">クリア</button>
+        </div>
+      </div>
+
+      <div class="days" aria-live="polite">
+        <span><span class="l">Days（自動計算）</span><span class="basis" id="daysBasis"></span></span>
+        <span class="v" id="daysOut">—</span>
+      </div>
+
+      <div class="f">
+        <span class="lab" id="statusLab">Status</span>
+        <div class="seg" id="seg" role="group" aria-labelledby="statusLab">
+          <button type="button" data-v="todo">To Read</button>
+          <button type="button" data-v="reading">Reading</button>
+          <button type="button" data-v="done">Done</button>
+        </div>
+      </div>
+
+      <div class="row r-last">
+        <div class="f">
+          <label for="fGenre">Genre <span class="cnt" id="cGenre">0/6</span></label>
+          <input class="in" id="fGenre" type="text">
+        </div>
+        <div class="f">
+          <label for="fMemo">Memo <span class="cnt" id="cMemo">0/24</span></label>
+          <textarea class="in" id="fMemo" rows="2" placeholder="2行・24文字まで"></textarea>
+        </div>
+      </div>
+    </form>
+    <div class="foot"><div class="foot-in">
+      <button class="btn primary wide" id="btnSave">Save</button>
+    </div></div>
+  </section>
+</div>
+
+<!-- ===== Backup dialog ===== -->
+<dialog id="dlg">
+  <div class="dlg">
+    <h2>Backup</h2>
+    <p>データはこのスマホのブラウザ内に保存されています。機種変更や念のための保存には、ファイルに書き出してください。</p>
+    <button class="btn primary" id="btnExport">Export（ファイルに保存）</button>
+    <button class="btn" id="btnImport">Import（ファイルから読み込み）</button>
+    <input type="file" id="fileIn" accept="application/json,.json" hidden>
+    <button class="btn" id="btnClose" style="border:0;color:var(--muted)">Close</button>
+  </div>
+</dialog>
+
+<script>
+(() => {
+'use strict';
+const KEY = 'readingList.v1';
+const WD = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const STATUS = { todo:'To Read', reading:'Reading', done:'Done' };
+const LIMIT = { title:20, vol:2, genre:6, memo:24 };
+const $ = (s) => document.querySelector(s);
+
+/* ---------- storage ---------- */
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+function load(){
+  try{
+    const s = localStorage.getItem(KEY);
+    if (s === null){
+      const seed = [{ id:uid(), title:'それが僕には楽しかったから', vol:'1', start:'2026-10-18', due:'2026-10-25', finished:'', status:'reading', genre:'IT(AI)', memo:'' }];
+      persist(seed); return seed;
+    }
+    const a = JSON.parse(s);
+    return Array.isArray(a) ? a.map(normalize) : [];
+  }catch(e){ return []; }
+}
+function persist(arr){
+  try{ localStorage.setItem(KEY, JSON.stringify(arr)); return true; }
+  catch(e){ alert('保存できませんでした。ブラウザの設定（プライベートモード等）を確認してください。'); return false; }
+}
+const isDate = (s) => typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s);
+function normalize(x){
+  x = x || {};
+  return {
+    id: (typeof x.id === 'string' && x.id) ? x.id : uid(),
+    title: String(x.title ?? ''),
+    vol: String(x.vol ?? ''),
+    start: isDate(x.start) ? x.start : '',
+    due: isDate(x.due) ? x.due : '',
+    finished: isDate(x.finished) ? x.finished : '',
+    status: STATUS[x.status] ? x.status : 'reading',
+    genre: String(x.genre ?? ''),
+    memo: String(x.memo ?? '')
+  };
+}
+
+/* ---------- dates ---------- */
+const pad = (n) => String(n).padStart(2,'0');
+function todayStr(){ const d = new Date(); return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+function toUTC(s){ const [y,m,d] = s.split('-').map(Number); return Date.UTC(y,m-1,d); }
+function diff(a,b){ return Math.round((toUTC(b) - toUTC(a)) / 86400000); }
+const fmt = (s) => s ? s.replace(/-/g,'/') : '—';
+/* Days = Finished − Start（読了後） / Due − Start（読了前） */
+function calcDays(b){
+  if (!b.start) return null;
+  const end = b.finished || b.due;
+  return end ? diff(b.start, end) : null;
+}
+
+/* ---------- state ---------- */
+let books = load();
+let filter = 'all';
+let editingId = null;
+let editStatus = 'reading';
+try{ navigator.storage && navigator.storage.persist && navigator.storage.persist(); }catch(e){}
+
+/* ---------- DOM helper ---------- */
+function el(tag, props, ...kids){
+  const n = document.createElement(tag);
+  for (const [k,v] of Object.entries(props || {})){
+    if (k === 'class') n.className = v;
+    else if (k === 'text') n.textContent = v;
+    else if (k === 'style') n.setAttribute('style', v);
+    else if (k.startsWith('on')) n.addEventListener(k.slice(2), v);
+    else n.setAttribute(k, v);
+  }
+  for (const c of kids){ if (c != null && c !== false) n.append(c); }
+  return n;
+}
+
+/* ---------- list ---------- */
+function progress(b, t){
+  const n = calcDays(b);
+  if (b.status === 'done') return { pct:100, cls:'done', label: (n != null && n >= 0) ? 'Done in '+n+' days' : 'Done' };
+  if (b.status === 'todo') return { pct:0, cls:'', label: (n != null && n >= 0) ? 'Plan '+n+' days' : 'Not started' };
+  if (!b.start) return { pct:0, cls:'', label:'—' };
+  const passed = diff(b.start, t);
+  if (passed < 0) return { pct:0, cls:'', label:'Starts in '+(-passed)+' days' };
+  const end = b.finished || b.due;
+  if (end){
+    const over = diff(end, t);
+    if (over > 0) return { pct:100, cls:'over', label:'Over by '+over+' days', over:true };
+    if (n > 0) return { pct:Math.min(100, passed / n * 100), cls:'', label: passed+' / '+n+' days' };
+  }
+  return { pct:0, cls:'', label: passed+' days' };
+}
+
+function renderList(){
+  const t = todayStr();
+  $('#today').textContent = 'Today ' + fmt(t) + ' (' + WD[new Date().getDay()] + ')';
+
+  const count = { all:books.length, reading:0, todo:0, done:0 };
+  books.forEach(b => count[b.status]++);
+  const tabs = $('#tabs'); tabs.textContent = '';
+  [['all','All'],['reading','Reading'],['todo','To Read'],['done','Done']].forEach(([k,label]) => {
+    tabs.append(el('button', { class:'tab', 'aria-pressed': String(filter === k),
+      onclick: () => { filter = k; renderList(); } }, label + ' ' + count[k]));
+  });
+
+  const list = $('#list'); list.textContent = '';
+  const rows = books.map((b,i) => ({ b, no:i+1 })).filter(r => filter === 'all' || r.b.status === filter);
+  if (!rows.length){
+    list.append(el('div', { class:'empty', text: books.length ? 'この Status の本はありません。' : 'まだ本がありません。\n「Add Book」から追加してください。', style:'white-space:pre-line' }));
+    return;
+  }
+  rows.forEach(({b,no}) => {
+    const p = progress(b, t);
+    const date = (lab, v) => el('span', {}, el('span', { class:'dl', text:lab }), el('span', { class:'dv' + (v ? '' : ' none'), text:fmt(v) }));
+    list.append(el('button', { class:'card', type:'button', onclick: () => openEditor(b.id) },
+      el('span', { class:'head' },
+        el('span', {},
+          el('span', { class:'meta', text: 'No.' + no + (b.vol ? ' · Vol. ' + b.vol : '') }),
+          el('span', { class:'title', text: b.title || '(no title)' })),
+        el('span', { class:'pill ' + b.status, text: STATUS[b.status] })),
+      el('span', { class:'dates' }, date('Start', b.start), date('Due', b.due), date('Finished', b.finished)),
+      el('span', {},
+        el('span', { class:'bar ' + p.cls }, el('span', { style:'width:' + p.pct.toFixed(1) + '%' })),
+        el('span', { class:'prog' }, el('span', { class: p.over ? 'over' : '', text:p.label }), el('span', { text:b.genre }))),
+      b.memo ? el('span', { class:'memo', text:b.memo }) : null
+    ));
+  });
+}
+
+/* ---------- editor ---------- */
+const f = { title:$('#fTitle'), vol:$('#fVol'), start:$('#fStart'), due:$('#fDue'), finished:$('#fFinished'), genre:$('#fGenre'), memo:$('#fMemo') };
+
+const chars = (s) => Array.from(s.replace(/\n/g,'')).length;
+function limitText(input, max, maxLines){
+  let v = input.value;
+  if (maxLines){ const ls = v.split('\n'); if (ls.length > maxLines) v = ls.slice(0, maxLines).join('\n'); }
+  let out = '', c = 0;
+  for (const ch of Array.from(v)){
+    if (ch !== '\n'){ if (c >= max) break; c++; }
+    out += ch;
+  }
+  if (out !== input.value) input.value = out;
+}
+function bindLimit(input, max, lines, counter){
+  const run = () => {
+    limitText(input, max, lines);
+    if (counter){ const n = chars(input.value); counter.textContent = n + '/' + max; counter.classList.toggle('full', n >= max); }
+  };
+  input.addEventListener('input', (e) => { if (!e.isComposing) run(); });
+  input.addEventListener('compositionend', run);
+  input._refresh = run;
+}
+bindLimit(f.title, LIMIT.title, 1, $('#cTitle'));
+bindLimit(f.vol, LIMIT.vol, 1, null);
+bindLimit(f.genre, LIMIT.genre, 1, $('#cGenre'));
+bindLimit(f.memo, LIMIT.memo, 2, $('#cMemo'));
+
+function updateDays(){
+  const n = calcDays({ start:f.start.value, due:f.due.value, finished:f.finished.value });
+  const out = $('#daysOut'), basis = $('#daysBasis');
+  out.classList.remove('bad');
+  if (n == null){ out.textContent = '—'; basis.textContent = 'Start と Due を選ぶと計算'; }
+  else if (n < 0){ out.textContent = n + ' days'; out.classList.add('bad'); basis.textContent = '日付の前後を確認してください'; }
+  else { out.textContent = n + ' days'; basis.textContent = f.finished.value ? 'Finished − Start' : 'Due − Start'; }
+  $('#clearFinished').hidden = !f.finished.value;
+}
+['start','due','finished'].forEach(k => { f[k].addEventListener('input', updateDays); f[k].addEventListener('change', updateDays); });
+$('#clearFinished').addEventListener('click', () => { f.finished.value = ''; updateDays(); });
+
+function setStatus(v){
+  editStatus = v;
+  document.querySelectorAll('#seg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === v)));
+}
+document.querySelectorAll('#seg button').forEach(b => b.addEventListener('click', () => setStatus(b.dataset.v)));
+
+function openEditor(id){
+  const b = id ? books.find(x => x.id === id) : null;
+  editingId = b ? b.id : null;
+  const d = b || { title:'', vol:'1', start:todayStr(), due:'', finished:'', status:'reading', genre:'', memo:'' };
+  $('#editTitle').textContent = b ? 'Edit Book · No.' + (books.indexOf(b) + 1) : 'Add Book';
+  for (const k of Object.keys(f)) f[k].value = d[k] || '';
+  [f.title, f.genre, f.memo].forEach(i => i._refresh());
+  setStatus(d.status);
+  updateDays();
+  $('#btnDelete').hidden = !b;
+  $('#listView').hidden = true; $('#editView').hidden = false;
+  window.scrollTo(0,0);
+  history.pushState({ edit:true }, '');
+}
+function closeEditor(){
+  $('#editView').hidden = true; $('#listView').hidden = false;
+  editingId = null; renderList();
+}
+window.addEventListener('popstate', () => { if (!$('#editView').hidden) closeEditor(); });
+$('#btnBack').addEventListener('click', () => history.back());
+$('#btnAdd').addEventListener('click', () => openEditor(null));
+
+function save(){
+  [f.title, f.genre, f.memo].forEach(i => i._refresh());
+  const data = {
+    title: f.title.value.trim(), vol: f.vol.value.trim(),
+    start: f.start.value, due: f.due.value, finished: f.finished.value,
+    status: editStatus, genre: f.genre.value.trim(), memo: f.memo.value.replace(/\s+$/,'')
+  };
+  if (!data.title){ alert('Title を入力してください。'); f.title.focus(); return; }
+  if (editingId){
+    const i = books.findIndex(x => x.id === editingId);
+    if (i >= 0) books[i] = { ...books[i], ...data };
+  } else {
+    books.push({ id:uid(), ...data });
+  }
+  if (persist(books)){ toast('保存しました'); history.back(); }
+}
+$('#btnSave').addEventListener('click', save);
+$('#form').addEventListener('submit', (e) => { e.preventDefault(); save(); });
+
+$('#btnDelete').addEventListener('click', () => {
+  const b = books.find(x => x.id === editingId); if (!b) return;
+  if (!confirm('「' + b.title + '」を削除しますか？')) return;
+  books = books.filter(x => x.id !== editingId);
+  if (persist(books)){ toast('削除しました'); history.back(); }
+});
+
+/* ---------- backup ---------- */
+const dlg = $('#dlg');
+const openDlg = () => { if (dlg.showModal) dlg.showModal(); else dlg.setAttribute('open',''); };
+$('#btnBackup').addEventListener('click', openDlg);
+$('#btnBackup2').addEventListener('click', openDlg);
+$('#btnClose').addEventListener('click', () => dlg.close());
+
+$('#btnExport').addEventListener('click', () => {
+  const payload = { app:'reading-list', version:1, exportedAt:new Date().toISOString(), books };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type:'application/json' });
+  const a = el('a', { href:URL.createObjectURL(blob), download:'reading-list_' + todayStr().replace(/-/g,'') + '.json' });
+  document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  toast('書き出しました');
+});
+$('#btnImport').addEventListener('click', () => $('#fileIn').click());
+$('#fileIn').addEventListener('change', async (e) => {
+  const file = e.target.files && e.target.files[0]; e.target.value = '';
+  if (!file) return;
+  try{
+    const obj = JSON.parse(await file.text());
+    const arr = Array.isArray(obj) ? obj : obj && obj.books;
+    if (!Array.isArray(arr)) throw new Error('format');
+    const seen = new Set();
+    const next = arr.map(normalize).filter(b => b.title).map(b => { if (seen.has(b.id)) b.id = uid(); seen.add(b.id); return b; });
+    if (!confirm(next.length + ' 冊のデータを読み込みます。今のデータは置き換わります。よろしいですか？')) return;
+    books = next;
+    if (persist(books)){ dlg.close(); filter = 'all'; renderList(); toast('読み込みました'); }
+  }catch(err){
+    alert('読み込めませんでした。Reading List で書き出した .json ファイルを選んでください。');
+  }
+});
+
+/* ---------- misc ---------- */
+let toastTimer;
+function toast(msg){
+  let t = $('.toast');
+  if (!t){ t = el('div', { class:'toast', role:'status' }); document.body.append(t); }
+  t.textContent = msg; t.hidden = false;
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 1600);
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden && $('#editView').hidden) renderList(); });
+
+renderList();
+
+if ('serviceWorker' in navigator){
+  window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
+}
+})();
+</script>
+</body>
+</html>
