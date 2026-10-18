@@ -52,11 +52,12 @@ button{cursor:pointer}
 .empty{padding:48px 12px;text-align:center;color:var(--muted);font-size:14px;line-height:1.7}
 .card{display:flex;flex-direction:column;gap:5px;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:9px 12px}
 .card:active{border-color:var(--line2);background:#FAFAFB}
-.card .head{display:flex;justify-content:space-between;align-items:center;gap:10px}
-.card .title{display:block;font-size:15px;font-weight:700;line-height:1.35;word-break:break-all;min-width:0}
+.card .head{display:flex;justify-content:space-between;align-items:center;gap:6px}
+.card .title{display:block;font-size:14.5px;font-weight:700;line-height:1.35;word-break:break-all;min-width:0}
 .card .no{font-family:var(--mono);font-size:11px;font-weight:400;color:var(--muted);margin-right:6px}
-.card .vol{font-family:var(--mono);font-size:11px;font-weight:400;color:var(--muted);margin-left:6px}
-.pill{flex:none;height:22px;padding:0 8px;border-radius:11px;color:#fff;font-size:11px;font-weight:500;display:flex;align-items:center}
+.card .vol{font-family:var(--mono);font-size:14px;font-weight:500;color:var(--sub);margin-left:5px;white-space:nowrap}
+.card .vol small{font-size:11px;font-weight:400;color:var(--muted);margin-right:1px}
+.pill{flex:none;height:22px;padding:0 7px;border-radius:11px;color:#fff;font-size:11px;font-weight:500;display:flex;align-items:center}
 .pill.reading{background:var(--accent)} .pill.other{background:var(--muted)} .pill.done{background:var(--done)}
 .dates{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;white-space:nowrap}
 .dl{font-size:12px;color:var(--muted);margin-right:4px}
@@ -160,7 +161,7 @@ dialog::backdrop{background:rgba(27,31,36,.4)}
     <form class="form" id="form" autocomplete="off" novalidate>
       <div class="row r-title">
         <div class="f">
-          <label for="fTitle">Title <span class="cnt" id="cTitle">0/20</span></label>
+          <label for="fTitle">Title <span class="cnt" id="cTitle">0/15</span></label>
           <input class="in" id="fTitle" type="text" enterkeyhint="next">
         </div>
         <div class="f">
@@ -235,7 +236,7 @@ const STATUS_OPTS = ['読書前','読書中','空1wk','2wk','1mnt','保留','読
 const GENRE_OPTS  = ['先生','先生御書関連','教学','日本文学','世界文学','ヨット','IT(AI)','etc'];
 const LEGACY = { reading:'読書中', done:'読了', todo:'読書前' };
 const kind = (s) => s === '読了' ? 'done' : s === '読書中' ? 'reading' : 'other';
-const LIMIT = { title:20, vol:2, status:4, genre:6, memo:24 };
+const LIMIT = { title:15, vol:2, status:4, genre:6, memo:24 };
 const $ = (s) => document.querySelector(s);
 
 /* ---------- storage ---------- */
@@ -336,7 +337,7 @@ function progress(b, t){
 
 function renderList(){
   const t = todayStr();
-  $('#today').textContent = 'Today ' + fmt(t) + ' (' + WD[new Date().getDay()] + ')';
+  $('#today').textContent = fmt(t) + ' ' + WD[new Date().getDay()];
 
   const count = {};
   books.forEach(b => { count[b.status] = (count[b.status] || 0) + 1; });
@@ -362,7 +363,7 @@ function renderList(){
         el('span', { class:'title' },
           el('span', { class:'no', text: String(no) }),
           b.title || '(no title)',
-          b.vol ? el('span', { class:'vol', text: 'Vol.' + b.vol }) : null),
+          b.vol ? el('span', { class:'vol' }, el('small', { text:'Vol.' }), b.vol) : null),
         el('span', { class:'pill ' + kind(b.status), text: b.status })),
       el('span', { class:'dates' }, date('Start', b.start, md), date('Due', b.due, md), date('Fin', b.finished, ymd)),
       el('span', { class:'prog' },
