@@ -228,9 +228,9 @@ dialog::backdrop{background:rgba(27,31,36,.4)}
 const KEY = 'readingList.v1';
 const WD = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 /* 候補リスト（ここを書き換えると候補が変わります） */
-const STATUS_OPTS = ['読書中','空1wk','2wk','1mnt','保留','読了'];
+const STATUS_OPTS = ['読書前','読書中','空1wk','2wk','1mnt','保留','読了'];
 const GENRE_OPTS  = ['先生','先生御書関連','教学','日本文学','世界文学','ヨット','IT(AI)','etc'];
-const LEGACY = { reading:'読書中', done:'読了', todo:'保留' };
+const LEGACY = { reading:'読書中', done:'読了', todo:'読書前' };
 const kind = (s) => s === '読了' ? 'done' : s === '読書中' ? 'reading' : 'other';
 const LIMIT = { title:20, vol:2, status:4, genre:6, memo:24 };
 const $ = (s) => document.querySelector(s);
@@ -264,7 +264,7 @@ function normalize(x){
     start: isDate(x.start) ? x.start : '',
     due: isDate(x.due) ? x.due : '',
     finished: isDate(x.finished) ? x.finished : '',
-    status: st || '読書中',
+    status: st || '読書前',
     genre: String(x.genre ?? ''),
     memo: String(x.memo ?? '')
   };
@@ -459,7 +459,7 @@ $('#clearFinished').addEventListener('click', () => { f.finished.value = ''; upd
 function openEditor(id){
   const b = id ? books.find(x => x.id === id) : null;
   editingId = b ? b.id : null;
-  const d = b || { title:'', vol:'1', start:todayStr(), due:'', finished:'', status:'読書中', genre:'', memo:'' };
+  const d = b || { title:'', vol:'1', start:todayStr(), due:'', finished:'', status:'読書前', genre:'', memo:'' };
   $('#editTitle').textContent = b ? 'Edit Book · No.' + (books.indexOf(b) + 1) : 'Add Book';
   for (const k of Object.keys(f)) f[k].value = d[k] || '';
   statusBeforeAuto = null;
@@ -486,7 +486,7 @@ function save(){
   const data = {
     title: f.title.value.trim(), vol: f.vol.value.trim(),
     start: f.start.value, due: f.due.value, finished: f.finished.value,
-    status: f.status.value.trim() || '読書中', genre: f.genre.value.trim(), memo: f.memo.value.replace(/\s+$/,'')
+    status: f.status.value.trim() || '読書前', genre: f.genre.value.trim(), memo: f.memo.value.replace(/\s+$/,'')
   };
   if (!data.title){ alert('Title を入力してください。'); f.title.focus(); return; }
   const errs = dateErrors();
