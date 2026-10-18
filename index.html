@@ -58,8 +58,8 @@ button{cursor:pointer}
 .pill{flex:none;height:22px;padding:0 8px;border-radius:11px;color:#fff;font-size:11px;font-weight:500;display:flex;align-items:center}
 .pill.reading{background:var(--accent)} .pill.other{background:var(--muted)} .pill.done{background:var(--done)}
 .dates{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;white-space:nowrap}
-.dl{font-size:10px;color:var(--muted);margin-right:3px}
-.dv{font-family:var(--mono);font-size:11.5px}
+.dl{font-size:12px;color:var(--muted);margin-right:4px}
+.dv{font-family:var(--mono);font-size:14px}
 .dv.none{color:var(--muted)}
 .prog{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--sub);white-space:nowrap}
 .bar{display:block;flex:1;height:5px;border-radius:3px;background:var(--track);overflow:hidden}
@@ -276,6 +276,9 @@ function todayStr(){ const d = new Date(); return d.getFullYear()+'-'+pad(d.getM
 function toUTC(s){ const [y,m,d] = s.split('-').map(Number); return Date.UTC(y,m-1,d); }
 function diff(a,b){ return Math.round((toUTC(b) - toUTC(a)) / 86400000); }
 const fmt = (s) => s ? s.replace(/-/g,'/') : '—';
+/* 一覧用：m/d（ゼロなし）と yyyy/m/d */
+const md  = (s) => { if (!s) return '—'; const [y,m,d] = s.split('-').map(Number); return m + '/' + d; };
+const ymd = (s) => { if (!s) return '—'; const [y,m,d] = s.split('-').map(Number); return y + '/' + m + '/' + d; };
 /* Days = Finished − Start（読了後） / Due − Start（読了前） */
 function calcDays(b){
   if (!b.start) return null;
@@ -350,7 +353,7 @@ function renderList(){
   }
   rows.forEach(({b,no}) => {
     const p = progress(b, t);
-    const date = (lab, v) => el('span', {}, el('span', { class:'dl', text:lab }), el('span', { class:'dv' + (v ? '' : ' none'), text:fmt(v) }));
+    const date = (lab, v, f) => el('span', {}, el('span', { class:'dl', text:lab }), el('span', { class:'dv' + (v ? '' : ' none'), text:f(v) }));
     list.append(el('button', { class:'card', type:'button', onclick: () => openEditor(b.id) },
       el('span', { class:'head' },
         el('span', { class:'title' },
@@ -358,7 +361,7 @@ function renderList(){
           b.title || '(no title)',
           b.vol ? el('span', { class:'vol', text: 'Vol.' + b.vol }) : null),
         el('span', { class:'pill ' + kind(b.status), text: b.status })),
-      el('span', { class:'dates' }, date('Start', b.start), date('Due', b.due), date('Fin', b.finished)),
+      el('span', { class:'dates' }, date('Start', b.start, md), date('Due', b.due, md), date('Fin', b.finished, ymd)),
       el('span', { class:'prog' },
         el('span', { class:'bar ' + p.cls }, el('span', { style:'width:' + p.pct.toFixed(1) + '%' })),
         el('span', { class: p.over ? 'over' : '', text:p.label }),
