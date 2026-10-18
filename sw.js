@@ -1,6 +1,6 @@
 // Reading List — offline cache
 // ファイルを更新したら CACHE の番号を上げてください（v1 → v2）
-const CACHE = 'reading-list-v2';
+const CACHE = 'reading-list-v3';
 const ASSETS = [
   './',
   './index.html',
