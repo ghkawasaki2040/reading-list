@@ -29,43 +29,45 @@ button{cursor:pointer}
 .mono{font-family:var(--mono)}
 
 /* header */
-.top{position:sticky;top:0;z-index:5;background:#fff;border-bottom:1px solid var(--line);padding:calc(env(safe-area-inset-top) + 18px) 12px 12px 20px}
+.top{position:sticky;top:0;z-index:5;background:#fff;border-bottom:1px solid var(--line);padding:calc(env(safe-area-inset-top) + 10px) 8px 10px 14px}
 .top-row{display:flex;justify-content:space-between;align-items:center;gap:8px}
-.top h1{margin:0;font-size:24px;font-weight:700;letter-spacing:.01em}
-.today{font-family:var(--mono);font-size:14px;color:var(--sub);margin-top:2px}
+.top h1{margin:0;font-size:22px;font-weight:700;letter-spacing:.01em}
 .icon-btn{width:44px;height:44px;border:0;background:transparent;display:flex;align-items:center;justify-content:center;color:var(--sub);border-radius:10px;flex:none}
 .icon-btn:active{background:var(--bg)}
 .icon-btn.danger{color:var(--danger)}
 .top.edit{padding:calc(env(safe-area-inset-top) + 10px) 8px 10px}
 .top.edit h1{font-size:17px}
 
-/* tabs */
-.tabs{display:flex;gap:8px;padding:14px 20px 6px;overflow-x:auto;scrollbar-width:none}
+/* tabs (header の Today の右) */
+.sub-row{display:flex;align-items:center;gap:10px;margin-top:4px;min-width:0}
+.today{font-family:var(--mono);font-size:13px;color:var(--sub);flex:none}
+.tabs{display:flex;gap:5px;overflow-x:auto;scrollbar-width:none;flex:1;min-width:0;padding:2px 0}
 .tabs::-webkit-scrollbar{display:none}
-.tab{flex:none;height:36px;padding:0 14px;border-radius:18px;border:1px solid var(--line2);background:#fff;font-size:13px}
+.tab{flex:none;height:28px;padding:0 9px;border-radius:14px;border:1px solid var(--line2);background:#fff;font-size:11px;white-space:nowrap}
 .tab[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff;font-weight:500}
 
-/* list */
-.list{padding:10px 20px calc(110px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:12px}
+/* list（コンパクト） */
+.list{padding:10px 14px calc(100px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:8px}
 .empty{padding:48px 12px;text-align:center;color:var(--muted);font-size:14px;line-height:1.7}
-.card{display:flex;flex-direction:column;gap:12px;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+.card{display:flex;flex-direction:column;gap:5px;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:9px 12px}
 .card:active{border-color:var(--line2);background:#FAFAFB}
-.card .head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
-.card .meta{display:block;font-family:var(--mono);font-size:12px;color:var(--muted)}
-.card .title{display:block;font-size:17px;font-weight:700;line-height:1.4;margin-top:4px;word-break:break-all}
-.pill{flex:none;height:26px;padding:0 10px;border-radius:13px;color:#fff;font-size:12px;font-weight:500;display:flex;align-items:center}
+.card .head{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.card .title{display:block;font-size:15px;font-weight:700;line-height:1.35;word-break:break-all;min-width:0}
+.card .no{font-family:var(--mono);font-size:11px;font-weight:400;color:var(--muted);margin-right:6px}
+.card .vol{font-family:var(--mono);font-size:11px;font-weight:400;color:var(--muted);margin-left:6px}
+.pill{flex:none;height:22px;padding:0 8px;border-radius:11px;color:#fff;font-size:11px;font-weight:500;display:flex;align-items:center}
 .pill.reading{background:var(--accent)} .pill.other{background:var(--muted)} .pill.done{background:var(--done)}
-.dates{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-.dates span span{display:block}
-.dl{font-size:11px;color:var(--muted)}
-.dv{font-family:var(--mono);font-size:13px;margin-top:2px}
+.dates{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;white-space:nowrap}
+.dl{font-size:10px;color:var(--muted);margin-right:3px}
+.dv{font-family:var(--mono);font-size:11.5px}
 .dv.none{color:var(--muted)}
-.bar{display:block;height:6px;border-radius:3px;background:var(--track);overflow:hidden}
-.bar span{display:block;height:6px;background:var(--accent)}
+.prog{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--sub);white-space:nowrap}
+.bar{display:block;flex:1;height:5px;border-radius:3px;background:var(--track);overflow:hidden}
+.bar span{display:block;height:5px;background:var(--accent)}
 .bar.done span{background:var(--done)} .bar.over span{background:var(--danger)}
-.prog{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--sub);margin-top:6px}
 .prog .over{color:var(--danger);font-weight:500}
-.memo{display:block;font-size:13px;color:var(--sub);white-space:pre-line;border-top:1px dashed var(--line);padding-top:10px}
+.prog .genre{color:var(--muted)}
+.memo{display:block;font-size:12px;color:var(--sub);white-space:pre-line;line-height:1.45}
 
 /* footer */
 .foot{position:fixed;left:0;right:0;bottom:0;z-index:5;background:linear-gradient(rgba(243,244,246,0),var(--bg) 30%)}
@@ -89,6 +91,7 @@ button{cursor:pointer}
 .in:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:var(--accent)}
 .in.mono{font-family:var(--mono)}
 .in.center{text-align:center}
+.in.err{border-color:var(--danger);background:#FDF3F0}
 input[type="date"].in{font-family:var(--mono);font-size:14px;padding:0 8px;min-width:0;display:flex;align-items:center}
 input[type="date"]::-webkit-date-and-time-value{text-align:left}
 textarea.in{height:auto;padding:8px 12px;line-height:1.5;resize:none}
@@ -124,9 +127,11 @@ dialog::backdrop{background:rgba(27,31,36,.4)}
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
         </button>
       </div>
-      <div class="today" id="today"></div>
+      <div class="sub-row">
+        <div class="today" id="today"></div>
+        <nav class="tabs" id="tabs" aria-label="Status filter"></nav>
+      </div>
     </header>
-    <nav class="tabs" id="tabs" aria-label="Status filter"></nav>
     <main class="list" id="list"></main>
     <div class="foot"><div class="foot-in">
       <button class="btn wide" id="btnBackup2">Backup</button>
@@ -279,7 +284,14 @@ function calcDays(b){
 }
 
 /* ---------- state ---------- */
-let books = load();
+/* Start の日付順（古い順）。Start が空の本は最後。同じ日付は登録順 */
+function sortBooks(arr){
+  return arr.map((b,i) => [b,i]).sort((x,y) => {
+    const a = x[0].start || '9999-99-99', c = y[0].start || '9999-99-99';
+    return a < c ? -1 : a > c ? 1 : x[1] - y[1];
+  }).map(x => x[0]);
+}
+let books = sortBooks(load());
 let filter = 'all';
 let editingId = null;
 try{ navigator.storage && navigator.storage.persist && navigator.storage.persist(); }catch(e){}
@@ -341,14 +353,16 @@ function renderList(){
     const date = (lab, v) => el('span', {}, el('span', { class:'dl', text:lab }), el('span', { class:'dv' + (v ? '' : ' none'), text:fmt(v) }));
     list.append(el('button', { class:'card', type:'button', onclick: () => openEditor(b.id) },
       el('span', { class:'head' },
-        el('span', {},
-          el('span', { class:'meta', text: 'No.' + no + (b.vol ? ' · Vol. ' + b.vol : '') }),
-          el('span', { class:'title', text: b.title || '(no title)' })),
+        el('span', { class:'title' },
+          el('span', { class:'no', text: String(no) }),
+          b.title || '(no title)',
+          b.vol ? el('span', { class:'vol', text: 'Vol.' + b.vol }) : null),
         el('span', { class:'pill ' + kind(b.status), text: b.status })),
-      el('span', { class:'dates' }, date('Start', b.start), date('Due', b.due), date('Finished', b.finished)),
-      el('span', {},
+      el('span', { class:'dates' }, date('Start', b.start), date('Due', b.due), date('Fin', b.finished)),
+      el('span', { class:'prog' },
         el('span', { class:'bar ' + p.cls }, el('span', { style:'width:' + p.pct.toFixed(1) + '%' })),
-        el('span', { class:'prog' }, el('span', { class: p.over ? 'over' : '', text:p.label }), el('span', { text:b.genre }))),
+        el('span', { class: p.over ? 'over' : '', text:p.label }),
+        b.genre ? el('span', { class:'genre', text:b.genre }) : null),
       b.memo ? el('span', { class:'memo', text:b.memo }) : null
     ));
   });
@@ -401,17 +415,42 @@ function renderChips(box, input, list){
 }
 [f.status, f.genre].forEach(i => { i.addEventListener('input', syncChips); i.addEventListener('compositionend', syncChips); });
 
+/* 日付チェック：Start ≤ Due、Start ≤ Finished */
+function dateErrors(){
+  const s = f.start.value, d = f.due.value, fi = f.finished.value;
+  f.due.min = s; f.finished.min = s;
+  const errs = [];
+  const badDue = !!(s && d && d < s), badFin = !!(s && fi && fi < s);
+  if (badDue) errs.push('Due は Start 以降の日付にしてください。');
+  if (badFin) errs.push('Finished は Start 以降の日付にしてください。');
+  f.due.classList.toggle('err', badDue);
+  f.finished.classList.toggle('err', badFin);
+  return errs;
+}
 function updateDays(){
+  const errs = dateErrors();
   const n = calcDays({ start:f.start.value, due:f.due.value, finished:f.finished.value });
   const out = $('#daysOut'), basis = $('#daysBasis');
   out.classList.remove('bad');
-  if (n == null){ out.textContent = '—'; basis.textContent = 'Start と Due を選ぶと計算'; }
+  if (errs.length){ out.textContent = '—'; out.classList.add('bad'); basis.textContent = errs[0]; }
+  else if (n == null){ out.textContent = '—'; basis.textContent = 'Start と Due を選ぶと計算'; }
   else if (n < 0){ out.textContent = n + ' days'; out.classList.add('bad'); basis.textContent = '日付の前後を確認してください'; }
   else { out.textContent = n + ' days'; basis.textContent = f.finished.value ? 'Finished − Start' : 'Due − Start'; }
   $('#clearFinished').hidden = !f.finished.value;
 }
 ['start','due','finished'].forEach(k => { f[k].addEventListener('input', updateDays); f[k].addEventListener('change', updateDays); });
-$('#clearFinished').addEventListener('click', () => { f.finished.value = ''; updateDays(); });
+/* Finished を入れたら Status を自動で「読了」に。消したら元の Status に戻す */
+let statusBeforeAuto = null;
+function autoStatus(){
+  if (f.finished.value){
+    if (f.status.value.trim() !== '読了'){ statusBeforeAuto = f.status.value; f.status.value = '読了'; }
+  } else if (statusBeforeAuto !== null && f.status.value.trim() === '読了'){
+    f.status.value = statusBeforeAuto; statusBeforeAuto = null;
+  }
+  f.status._refresh(); syncChips();
+}
+f.finished.addEventListener('change', autoStatus);
+$('#clearFinished').addEventListener('click', () => { f.finished.value = ''; updateDays(); autoStatus(); });
 
 
 function openEditor(id){
@@ -420,6 +459,7 @@ function openEditor(id){
   const d = b || { title:'', vol:'1', start:todayStr(), due:'', finished:'', status:'読書中', genre:'', memo:'' };
   $('#editTitle').textContent = b ? 'Edit Book · No.' + (books.indexOf(b) + 1) : 'Add Book';
   for (const k of Object.keys(f)) f[k].value = d[k] || '';
+  statusBeforeAuto = null;
   [f.title, f.status, f.genre, f.memo].forEach(i => i._refresh());
   renderChips($('#chipsStatus'), f.status, optionList(STATUS_OPTS, 'status'));
   renderChips($('#chipsGenre'), f.genre, optionList(GENRE_OPTS, 'genre'));
@@ -446,12 +486,15 @@ function save(){
     status: f.status.value.trim() || '読書中', genre: f.genre.value.trim(), memo: f.memo.value.replace(/\s+$/,'')
   };
   if (!data.title){ alert('Title を入力してください。'); f.title.focus(); return; }
+  const errs = dateErrors();
+  if (errs.length){ alert(errs.join('\n')); return; }
   if (editingId){
     const i = books.findIndex(x => x.id === editingId);
     if (i >= 0) books[i] = { ...books[i], ...data };
   } else {
     books.push({ id:uid(), ...data });
   }
+  books = sortBooks(books);
   if (persist(books)){ toast('保存しました'); history.back(); }
 }
 $('#btnSave').addEventListener('click', save);
@@ -490,7 +533,7 @@ $('#fileIn').addEventListener('change', async (e) => {
     const seen = new Set();
     const next = arr.map(normalize).filter(b => b.title).map(b => { if (seen.has(b.id)) b.id = uid(); seen.add(b.id); return b; });
     if (!confirm(next.length + ' 冊のデータを読み込みます。今のデータは置き換わります。よろしいですか？')) return;
-    books = next;
+    books = sortBooks(next);
     if (persist(books)){ dlg.close(); filter = 'all'; renderList(); toast('読み込みました'); }
   }catch(err){
     alert('読み込めませんでした。Reading List で書き出した .json ファイルを選んでください。');
