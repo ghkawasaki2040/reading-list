@@ -54,7 +54,7 @@ button{cursor:pointer}
 .card .meta{display:block;font-family:var(--mono);font-size:12px;color:var(--muted)}
 .card .title{display:block;font-size:17px;font-weight:700;line-height:1.4;margin-top:4px;word-break:break-all}
 .pill{flex:none;height:26px;padding:0 10px;border-radius:13px;color:#fff;font-size:12px;font-weight:500;display:flex;align-items:center}
-.pill.reading{background:var(--accent)} .pill.todo{background:var(--muted)} .pill.done{background:var(--done)}
+.pill.reading{background:var(--accent)} .pill.other{background:var(--muted)} .pill.done{background:var(--done)}
 .dates{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .dates span span{display:block}
 .dl{font-size:11px;color:var(--muted)}
@@ -98,9 +98,9 @@ textarea.in{height:auto;padding:8px 12px;line-height:1.5;resize:none}
 .days .basis{display:block;font-family:var(--mono);font-size:11px;color:#3E5C59;margin-top:2px}
 .days .v{font-family:var(--mono);font-size:20px;font-weight:500;color:var(--accent-dk)}
 .days .v.bad{color:var(--danger)}
-.seg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));background:var(--track);border-radius:10px;padding:3px;gap:3px}
-.seg button{height:40px;border:0;border-radius:8px;background:transparent;font-size:14px;color:var(--sub)}
-.seg button[aria-pressed="true"]{background:#fff;font-weight:700;color:var(--accent);box-shadow:0 1px 2px rgba(27,31,36,.08)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.chip{height:36px;padding:0 12px;border-radius:18px;border:1px solid var(--line2);background:#fff;font-size:13px}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:500}
 
 /* dialog */
 dialog{border:0;border-radius:16px;padding:0;width:min(92vw,400px);color:var(--ink)}
@@ -183,23 +183,20 @@ dialog::backdrop{background:rgba(27,31,36,.4)}
       </div>
 
       <div class="f">
-        <span class="lab" id="statusLab">Status</span>
-        <div class="seg" id="seg" role="group" aria-labelledby="statusLab">
-          <button type="button" data-v="todo">To Read</button>
-          <button type="button" data-v="reading">Reading</button>
-          <button type="button" data-v="done">Done</button>
-        </div>
+        <label for="fStatus">Status <span class="cnt" id="cStatus">0/4</span></label>
+        <input class="in" id="fStatus" type="text" placeholder="選ぶか入力（4文字まで）">
+        <div class="chips" id="chipsStatus" role="group" aria-label="Status の候補"></div>
       </div>
 
-      <div class="row r-last">
-        <div class="f">
-          <label for="fGenre">Genre <span class="cnt" id="cGenre">0/6</span></label>
-          <input class="in" id="fGenre" type="text">
-        </div>
-        <div class="f">
-          <label for="fMemo">Memo <span class="cnt" id="cMemo">0/24</span></label>
-          <textarea class="in" id="fMemo" rows="2" placeholder="2行・24文字まで"></textarea>
-        </div>
+      <div class="f">
+        <label for="fGenre">Genre <span class="cnt" id="cGenre">0/6</span></label>
+        <input class="in" id="fGenre" type="text" placeholder="選ぶか入力（6文字まで）">
+        <div class="chips" id="chipsGenre" role="group" aria-label="Genre の候補"></div>
+      </div>
+
+      <div class="f">
+        <label for="fMemo">Memo <span class="cnt" id="cMemo">0/24</span></label>
+        <textarea class="in" id="fMemo" rows="2" placeholder="2行・24文字まで"></textarea>
       </div>
     </form>
     <div class="foot"><div class="foot-in">
@@ -225,8 +222,12 @@ dialog::backdrop{background:rgba(27,31,36,.4)}
 'use strict';
 const KEY = 'readingList.v1';
 const WD = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-const STATUS = { todo:'To Read', reading:'Reading', done:'Done' };
-const LIMIT = { title:20, vol:2, genre:6, memo:24 };
+/* 候補リスト（ここを書き換えると候補が変わります） */
+const STATUS_OPTS = ['読書中','空1wk','2wk','1mnt','保留','読了'];
+const GENRE_OPTS  = ['先生','先生御書関連','教学','日本文学','世界文学','ヨット','IT(AI)','etc'];
+const LEGACY = { reading:'読書中', done:'読了', todo:'保留' };
+const kind = (s) => s === '読了' ? 'done' : s === '読書中' ? 'reading' : 'other';
+const LIMIT = { title:20, vol:2, status:4, genre:6, memo:24 };
 const $ = (s) => document.querySelector(s);
 
 /* ---------- storage ---------- */
@@ -235,7 +236,7 @@ function load(){
   try{
     const s = localStorage.getItem(KEY);
     if (s === null){
-      const seed = [{ id:uid(), title:'それが僕には楽しかったから', vol:'1', start:'2026-10-18', due:'2026-10-25', finished:'', status:'reading', genre:'IT(AI)', memo:'' }];
+      const seed = [{ id:uid(), title:'それが僕には楽しかったから', vol:'1', start:'2026-10-18', due:'2026-10-25', finished:'', status:'読書中', genre:'IT(AI)', memo:'' }];
       persist(seed); return seed;
     }
     const a = JSON.parse(s);
@@ -249,6 +250,8 @@ function persist(arr){
 const isDate = (s) => typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s);
 function normalize(x){
   x = x || {};
+  let st = String(x.status ?? '').trim();
+  st = LEGACY[st] || st;
   return {
     id: (typeof x.id === 'string' && x.id) ? x.id : uid(),
     title: String(x.title ?? ''),
@@ -256,7 +259,7 @@ function normalize(x){
     start: isDate(x.start) ? x.start : '',
     due: isDate(x.due) ? x.due : '',
     finished: isDate(x.finished) ? x.finished : '',
-    status: STATUS[x.status] ? x.status : 'reading',
+    status: st || '読書中',
     genre: String(x.genre ?? ''),
     memo: String(x.memo ?? '')
   };
@@ -279,7 +282,6 @@ function calcDays(b){
 let books = load();
 let filter = 'all';
 let editingId = null;
-let editStatus = 'reading';
 try{ navigator.storage && navigator.storage.persist && navigator.storage.persist(); }catch(e){}
 
 /* ---------- DOM helper ---------- */
@@ -299,8 +301,9 @@ function el(tag, props, ...kids){
 /* ---------- list ---------- */
 function progress(b, t){
   const n = calcDays(b);
-  if (b.status === 'done') return { pct:100, cls:'done', label: (n != null && n >= 0) ? 'Done in '+n+' days' : 'Done' };
-  if (b.status === 'todo') return { pct:0, cls:'', label: (n != null && n >= 0) ? 'Plan '+n+' days' : 'Not started' };
+  const k = kind(b.status);
+  if (k === 'done') return { pct:100, cls:'done', label: (n != null && n >= 0) ? 'Done in '+n+' days' : 'Done' };
+  if (k === 'other') return { pct:0, cls:'', label: (n != null && n >= 0) ? 'Plan '+n+' days' : '—' };
   if (!b.start) return { pct:0, cls:'', label:'—' };
   const passed = diff(b.start, t);
   if (passed < 0) return { pct:0, cls:'', label:'Starts in '+(-passed)+' days' };
@@ -317,12 +320,14 @@ function renderList(){
   const t = todayStr();
   $('#today').textContent = 'Today ' + fmt(t) + ' (' + WD[new Date().getDay()] + ')';
 
-  const count = { all:books.length, reading:0, todo:0, done:0 };
-  books.forEach(b => count[b.status]++);
+  const count = {};
+  books.forEach(b => { count[b.status] = (count[b.status] || 0) + 1; });
+  const keys = STATUS_OPTS.filter(s => count[s]).concat(Object.keys(count).filter(s => !STATUS_OPTS.includes(s)));
+  if (filter !== 'all' && !count[filter]) filter = 'all';
   const tabs = $('#tabs'); tabs.textContent = '';
-  [['all','All'],['reading','Reading'],['todo','To Read'],['done','Done']].forEach(([k,label]) => {
+  [['all','All',books.length]].concat(keys.map(s => [s, s, count[s]])).forEach(([k,label,c]) => {
     tabs.append(el('button', { class:'tab', 'aria-pressed': String(filter === k),
-      onclick: () => { filter = k; renderList(); } }, label + ' ' + count[k]));
+      onclick: () => { filter = k; renderList(); } }, label + ' ' + c));
   });
 
   const list = $('#list'); list.textContent = '';
@@ -339,7 +344,7 @@ function renderList(){
         el('span', {},
           el('span', { class:'meta', text: 'No.' + no + (b.vol ? ' · Vol. ' + b.vol : '') }),
           el('span', { class:'title', text: b.title || '(no title)' })),
-        el('span', { class:'pill ' + b.status, text: STATUS[b.status] })),
+        el('span', { class:'pill ' + kind(b.status), text: b.status })),
       el('span', { class:'dates' }, date('Start', b.start), date('Due', b.due), date('Finished', b.finished)),
       el('span', {},
         el('span', { class:'bar ' + p.cls }, el('span', { style:'width:' + p.pct.toFixed(1) + '%' })),
@@ -350,7 +355,7 @@ function renderList(){
 }
 
 /* ---------- editor ---------- */
-const f = { title:$('#fTitle'), vol:$('#fVol'), start:$('#fStart'), due:$('#fDue'), finished:$('#fFinished'), genre:$('#fGenre'), memo:$('#fMemo') };
+const f = { title:$('#fTitle'), vol:$('#fVol'), start:$('#fStart'), due:$('#fDue'), finished:$('#fFinished'), status:$('#fStatus'), genre:$('#fGenre'), memo:$('#fMemo') };
 
 const chars = (s) => Array.from(s.replace(/\n/g,'')).length;
 function limitText(input, max, maxLines){
@@ -374,8 +379,27 @@ function bindLimit(input, max, lines, counter){
 }
 bindLimit(f.title, LIMIT.title, 1, $('#cTitle'));
 bindLimit(f.vol, LIMIT.vol, 1, null);
+bindLimit(f.status, LIMIT.status, 1, $('#cStatus'));
 bindLimit(f.genre, LIMIT.genre, 1, $('#cGenre'));
 bindLimit(f.memo, LIMIT.memo, 2, $('#cMemo'));
+
+/* 候補チップ：タップで選択、入力欄には自由入力も可 */
+function optionList(base, key){
+  const extra = [];
+  books.forEach(b => { const v = b[key]; if (v && !base.includes(v) && !extra.includes(v)) extra.push(v); });
+  return base.concat(extra);
+}
+function syncChips(){
+  [['#chipsStatus', f.status], ['#chipsGenre', f.genre]].forEach(([s, input]) => {
+    document.querySelectorAll(s + ' .chip').forEach(c => c.setAttribute('aria-pressed', String(c.textContent === input.value.trim())));
+  });
+}
+function renderChips(box, input, list){
+  box.textContent = '';
+  list.forEach(v => box.append(el('button', { type:'button', class:'chip',
+    onclick: () => { input.value = v; input._refresh(); syncChips(); } }, v)));
+}
+[f.status, f.genre].forEach(i => { i.addEventListener('input', syncChips); i.addEventListener('compositionend', syncChips); });
 
 function updateDays(){
   const n = calcDays({ start:f.start.value, due:f.due.value, finished:f.finished.value });
@@ -389,22 +413,19 @@ function updateDays(){
 ['start','due','finished'].forEach(k => { f[k].addEventListener('input', updateDays); f[k].addEventListener('change', updateDays); });
 $('#clearFinished').addEventListener('click', () => { f.finished.value = ''; updateDays(); });
 
-function setStatus(v){
-  editStatus = v;
-  document.querySelectorAll('#seg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === v)));
-}
-document.querySelectorAll('#seg button').forEach(b => b.addEventListener('click', () => setStatus(b.dataset.v)));
 
 function openEditor(id){
   const b = id ? books.find(x => x.id === id) : null;
   editingId = b ? b.id : null;
-  const d = b || { title:'', vol:'1', start:todayStr(), due:'', finished:'', status:'reading', genre:'', memo:'' };
+  const d = b || { title:'', vol:'1', start:todayStr(), due:'', finished:'', status:'読書中', genre:'', memo:'' };
   $('#editTitle').textContent = b ? 'Edit Book · No.' + (books.indexOf(b) + 1) : 'Add Book';
   for (const k of Object.keys(f)) f[k].value = d[k] || '';
-  [f.title, f.genre, f.memo].forEach(i => i._refresh());
-  setStatus(d.status);
+  [f.title, f.status, f.genre, f.memo].forEach(i => i._refresh());
+  renderChips($('#chipsStatus'), f.status, optionList(STATUS_OPTS, 'status'));
+  renderChips($('#chipsGenre'), f.genre, optionList(GENRE_OPTS, 'genre'));
+  syncChips();
   updateDays();
-  $('#btnDelete').hidden = !b;
+  $('#btnDelete').style.visibility = b ? 'visible' : 'hidden';
   $('#listView').hidden = true; $('#editView').hidden = false;
   window.scrollTo(0,0);
   history.pushState({ edit:true }, '');
@@ -418,11 +439,11 @@ $('#btnBack').addEventListener('click', () => history.back());
 $('#btnAdd').addEventListener('click', () => openEditor(null));
 
 function save(){
-  [f.title, f.genre, f.memo].forEach(i => i._refresh());
+  [f.title, f.status, f.genre, f.memo].forEach(i => i._refresh());
   const data = {
     title: f.title.value.trim(), vol: f.vol.value.trim(),
     start: f.start.value, due: f.due.value, finished: f.finished.value,
-    status: editStatus, genre: f.genre.value.trim(), memo: f.memo.value.replace(/\s+$/,'')
+    status: f.status.value.trim() || '読書中', genre: f.genre.value.trim(), memo: f.memo.value.replace(/\s+$/,'')
   };
   if (!data.title){ alert('Title を入力してください。'); f.title.focus(); return; }
   if (editingId){
