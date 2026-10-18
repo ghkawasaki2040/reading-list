@@ -204,8 +204,8 @@ dialog::backdrop{background:rgba(27,31,36,.4)}
       </div>
 
       <div class="f">
-        <label for="fMemo">Memo <span class="cnt" id="cMemo">0/24</span></label>
-        <textarea class="in" id="fMemo" rows="2" placeholder="2行・24文字まで"></textarea>
+        <label for="fMemo">Memo <span class="cnt" id="cMemo">0/30</span></label>
+        <textarea class="in" id="fMemo" rows="2" placeholder="2行・30文字まで"></textarea>
       </div>
     </form>
     <div class="foot"><div class="foot-in">
@@ -236,7 +236,7 @@ const STATUS_OPTS = ['読書前','読書中','空1wk','2wk','1mnt','保留','読
 const GENRE_OPTS  = ['先生','先生御書関連','教学','日本文学','世界文学','ヨット','IT(AI)','etc'];
 const LEGACY = { reading:'読書中', done:'読了', todo:'読書前' };
 const kind = (s) => s === '読了' ? 'done' : s === '読書中' ? 'reading' : 'other';
-const LIMIT = { title:15, vol:2, status:4, genre:6, memo:24 };
+const LIMIT = { title:15, vol:2, status:4, genre:6, memo:30 };
 const $ = (s) => document.querySelector(s);
 
 /* ---------- storage ---------- */
