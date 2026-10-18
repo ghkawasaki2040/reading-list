@@ -552,8 +552,20 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden && $(
 
 renderList();
 
+/* 自動更新：GitHub に新しい版を上げると、次にアプリを開いたとき（またはアプリに戻ったとき）に入れ替わる */
 if ('serviceWorker' in navigator){
-  window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
+  const hadController = !!navigator.serviceWorker.controller;
+  let reloading = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!hadController || reloading) return;
+    if (!$('#editView').hidden) return;          // 入力中は再読み込みしない（次に開いたとき反映）
+    reloading = true; location.reload();
+  });
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').then((reg) => {
+      document.addEventListener('visibilitychange', () => { if (!document.hidden) reg.update().catch(() => {}); });
+    }).catch(() => {});
+  });
 }
 })();
 </script>
